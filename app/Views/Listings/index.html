@@ -1,0 +1,68 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<div class="loader" style="padding: 0">
+    <div class="collapse" id="navbarHeader">
+        <div class="bg-white  px-5 py-4 shadow rounded-lg container text-center">
+        <div class="row">
+                <h4>About</h4>
+                <p class="text-muted">
+                    An online platform where people can list or rent properties for short-term
+                    use.
+                    Be it an entire home, a spare bedroom or even a sofa, anyone looking to earn some profit can
+                    promote their space on Booking-app.
+                    <br><br>
+                    To become a host: sign-up or log-in and add a listing!
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="container navbar navbar-light box-shadow">
+        <button class="button-17" type="button" data-toggle="collapse" data-target="#navbarHeader">About</button>
+    </div>
+</div>
+<br>
+
+<div class="bg-white  px-5 py-4 shadow rounded-lg container text-center" id="mainBanner">
+    <h1 class="jumbotron-heading">Find your next stay! </h1>
+    <p class="lead text-muted">Search for the best homes, apartments, hotels and much more...</p>
+    <br>
+    <p class="lead text-muted">Want to become a host? Add a listing here:</p>
+    <p>
+        <a href="/listings/create" class="button-17">Add a listing </a>
+    </p>
+</div>
+<br>
+
+<div class="bg-light  px-5 py-5 shadow rounded-lg container text-center">
+    <div class="row">
+        {% for listing in listings %}
+        <div class="col-4">
+            <div class="card mb-4 box-shadow">
+                <img class="card-img-top"
+                     src="{{ listing.img_path }}"
+                     alt="Card image cap">
+                <div class="card-body"> {{ listing.name }}
+                    <p class="card-text">{{ listing.description }}</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="btn-group">
+                            <form action="/listings/{{listing.id}}">
+                                <button class="button-17">View</button>
+                            </form>
+                        </div>
+                    </div>
+                    <div>
+                        <small class="text-muted"> Price for one night: {{ listing.price }}$ </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {%endfor%}
+        <a href="#" class="btn btn-primary scrollUp">
+            <i class="fa fa-arrow-circle-o-up"></i> up
+        </a>
+    </div>
+
+    <!--</main>-->
+
+    {% endblock %}

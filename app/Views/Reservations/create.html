@@ -1,0 +1,25 @@
+{% extends "layout.html" %}
+{% block content %}
+<html>
+<head>
+    <title>Booking-App</title>
+</head>
+<body>
+<div>
+    <form action="/listings/{{listingId}}/reservations" method="post">
+
+       Reserve from:
+        <input type="date" id="reserve_from" min="{{ minDate }}" name="reserve_from">
+       Reserve till:
+        <input type="date" id="reserve_till" name="reserve_till">
+<br><br>
+        <button style="background-color: darkslategray; color: white; font-size:large "
+              >Make reservation</button>
+
+    </form>
+</div>
+</body>
+</html>
+
+{% extends "layout.html" %}
+{% block content %}

@@ -1,0 +1,60 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<div class="bg-white px-5 py-4 shadow rounded-lg">
+    <form action="/listings" method="post">
+
+        <div class="form-group">
+            <label for="name">Name</label>
+            <input type="text" id="name" class="form-control" maxlength="200" name="name" required value="{{ inputs['title'] }}">
+        </div>
+
+        <div class="form-group">
+            <label for="address">Address</label>
+            <input type="text" id="address" class="form-control" maxlength="200" name="address" required value="{{ inputs['title'] }}">
+        </div>
+
+        <div class="form-group">
+            <label for="description">Description</label>
+            <textarea id="description" name="description" class="form-control" cols="75" rows="10"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="img_path">Image URL</label>
+            <input type="text" id="img_path" class="form-control" maxlength="200" name="img_path">
+        </div>
+
+
+        <div class="form-row">
+            <div class="col-lg-6">
+                <label>Price for one night</label>
+                <div class="input-group mb-3">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">$</span>
+                    </div>
+                    <input id="price" name ="price" type="text" class="form-control" aria-label="Amount (to the nearest dollar)">
+                    <div class="input-group-append">
+                        <span class="input-group-text">.00</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3">
+                <label for="available_from">Available from:</label>
+                <input type="date" id="available_from" class="form-control" min="{{ minDate }}" name="available_from">
+            </div>
+
+            <div class="col-lg-3">
+                <label for="availabe_till">Available till:</label>
+                <input type="date" id="availabe_till" class="form-control" min="{{ minDate }}" name="availabe_till">
+            </div>
+        </div>
+
+        <button class="btn btn-success">
+            Add to listing
+        </button>
+
+    </form>
+</div>
+
+{% endblock %}

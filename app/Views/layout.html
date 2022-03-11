@@ -1,0 +1,113 @@
+
+<head>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+          integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
+          crossorigin="anonymous">
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="generator" content="Album - Photo Collection Template , Responsive Bootstrap 4 template ,
+     bootstrap 4 starter template, bootstrap4 template, Album template, Photography Template">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" lang="en" content="Simple Bootstrap 4 Photography template , Responsive and Modern HTML5
+    Template made from bootstrap 4.">
+    <meta name="keywords" lang="en" content="photography template, bootstrap 4 template,bootstrap 4 album template,
+    responsive bootstrap 4 template, bootstrap 4, bootstraping, bootstrap4, oribitthemes, othemes">
+    <meta name="robots" content="index, follow">
+    <meta name="description" content="">
+    <link rel="stylesheet" href="dist/font-awesome/css/font-awesome.min.css"/>
+    <link rel="stylesheet" type="text/css" href="css/main.min.css">
+    <link href="https://cdn.jsdelivr.net/gh/coliff/bootstrap-ie8/css/bootstrap-ie9.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/g/html5shiv@3.7.3"></script>
+    <link href="https://cdn.jsdelivr.net/gh/coliff/bootstrap-ie8/css/bootstrap-ie8.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/css/bootstrap.css">
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.css">
+
+</head>
+<title>Booking-app</title>
+
+
+
+<style>
+    .button-17 {
+        align-items: center;
+        appearance: none;
+        background-color: #fff;
+        border-radius: 24px;
+        border-style: none;
+        box-shadow: rgba(0, 0, 0, .2) 0 3px 5px -1px, rgba(0, 0, 0, .14) 0 6px 10px 0, rgba(0, 0, 0, .12) 0 1px 18px 0;
+        box-sizing: border-box;
+        color: #3c4043;
+        cursor: pointer;
+        display: inline-flex;
+        fill: currentcolor;
+        font-family: "Google Sans", Roboto, Arial, sans-serif;
+        font-size: 14px;
+        font-weight: 500;
+        height: 48px;
+        justify-content: center;
+        letter-spacing: .25px;
+        line-height: normal;
+        max-width: 100%;
+        overflow: visible;
+        padding: 2px 24px;
+        position: relative;
+        text-align: center;
+        text-transform: none;
+        transition: box-shadow 280ms cubic-bezier(.4, 0, .2, 1), opacity 15ms linear 30ms, transform 270ms cubic-bezier(0, 0, .2, 1) 0ms;
+        user-select: none;
+        -webkit-user-select: none;
+        touch-action: manipulation;
+        width: auto;
+        will-change: transform, opacity;
+        z-index: 0;
+    }
+
+    .button-17:hover {
+        background: #F6F9FE;
+        color: darkslategrey;
+    }
+
+</style>
+
+<body class="bg-light">
+<header>
+    <nav class="d-flex justify-content-end align-items-center px-4 py-2">
+        <a style="color: #222222" class="nav-item nav-link" href="/listings">Home</a>
+        <a style="color: #222222" class="nav-item nav-link" href="/listings/create">Add a listing</a>
+        <form action="/logout" method="post" class="m-0">
+            <button class="btn btn-light navbar-btn">Logout</button>
+        </form>
+    </nav>
+</header>
+
+<main id="content" class="container mx-auto">
+    <div>
+        {% block content %}
+
+        {% endblock %}
+    </div>
+</main>
+
+<footer>
+    &copy; BookingApp
+</footer>
+
+<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+        integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
+        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+        crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
+        crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="js/main.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.js"></script>
+<script type="text/javascript"></script>
+{% block scripts %}
+{% endblock %}
+
+</body>
+
+
