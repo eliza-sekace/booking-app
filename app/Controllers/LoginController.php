@@ -36,6 +36,7 @@ class LoginController
         // Check password
         if (!$user->checkPassword($_POST['password'])) {
             header("location: /login", true);
+            return;
         }
 
         // If ok, start session, add user id to session, redirect to articles

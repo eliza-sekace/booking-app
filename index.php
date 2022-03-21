@@ -30,7 +30,6 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
     //comment
     $r->addRoute('POST', '/listings/{id}/reviews', ['App\Controllers\ReviewsController', 'create']);
     //make reservation
-    //$r->addRoute('GET', '/listings/{id}/reservations/create', ['App\Controllers\ReservationsController', 'create']);
     $r->addRoute('POST', '/listings/{id}/reservations', ['App\Controllers\ReservationsController', 'store']);
 
 

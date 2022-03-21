@@ -2,7 +2,9 @@
 
 namespace App\Controllers;
 
+use App\Exceptions\FormValidationException;
 use App\Repositories\UsersRepository;
+use App\Validation\FormValidator;
 use App\Views\View;
 
 class RegisterController
@@ -25,6 +27,22 @@ class RegisterController
 
     public function register()
     {
+        try {
+            $validator = new FormValidator($_POST, [
+                'password' => ['required', "min:6"],
+                'password_confirmation' => ['required', "min:6"],
+                'email' => ['required']
+
+            ]);
+            $validator->passes();
+        } catch (FormValidationException $exception) {
+
+            $_SESSION['errors'] = $validator->getErrors();
+            $_SESSION['inputs'] = $_POST;
+            return new View('Auth/register.html',[
+                'errors'=>$_SESSION['errors']]);
+        }
+    //var_dump($_SESSION['errors']);
         if ($_POST['password'] !== $_POST['password_confirmation']) {
             header("location: /register", true);
         }

@@ -3,12 +3,13 @@
 namespace App\Controllers;
 
 use App\Database\Connection;
+use App\Exceptions\FormValidationException;
 use App\Exceptions\ResourceNotFoundException;
-use App\Models\Article;
 use App\Models\Listing;
 use App\Redirect;
 use App\Repositories\ProfilesRepository;
-use App\Repositories\ReservationsRepository;
+use App\Validation\Errors;
+use App\Validation\FormValidator;
 use App\Views\View;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
@@ -16,6 +17,12 @@ use Carbon\CarbonPeriod;
 
 class ListingsController
 {
+    public function __construct()
+    {
+        if (!isset($_SESSION['user_id'])) {
+            header("location: /login", true);
+        }
+    }
     public function index()
     {
         $connection = Connection::connect();
@@ -47,6 +54,7 @@ class ListingsController
 
     public function show($vars)
     {
+        try {
         $connection = Connection::connect();
         $result = $connection
             ->createQueryBuilder()
@@ -58,6 +66,9 @@ class ListingsController
             ->executeQuery()
             ->fetchAssociative();
 
+            if (!$result) {
+                throw new ResourceNotFoundException("Article with id {$vars['id']} not found");
+            }
 
         $apartment = new Listing(
             $result['id'],
@@ -117,7 +128,6 @@ class ListingsController
             $averageRatingStars = str_repeat("★", round($averageRating, 0));
         }
 
-
             //get start available dates
         $availableDates = $connection
             ->createQueryBuilder()
@@ -149,6 +159,10 @@ class ListingsController
             $minDate=$availableDates['available_from'];
         } else $minDate=Carbon::now()->format('Y-m-d');
 
+        } catch (ResourceNotFoundException $e) {
+           echo ($e->getMessage()). "<br>";
+            return new View('404.html');
+        }
 
         return new View("Listings/show.html", [
             'listing' => $apartment,
@@ -168,12 +182,28 @@ class ListingsController
     {
         return new View("Listings/create.html", [
             'inputs' => $_SESSION['inputs'] ?? [],
-            'minDate' => Carbon::now()->format('Y-m-d')
+            'minDate' => Carbon::now()->format('Y-m-d'),
+            'errors'=>Errors::getAll()
         ]);
     }
 
-    public function store($vars): Redirect
+    public function store(): Redirect
     {
+        try {
+            $validator = new FormValidator($_POST, [
+                'name' => ['required', "min:3"],
+                'address' => ['required'],
+                'description' => ['required'],
+                'price' => ['required'],
+
+            ]);
+            $validator->passes();
+        } catch (FormValidationException $exception) {
+
+            $_SESSION['errors'] = $validator->getErrors();
+            $_SESSION['inputs'] = $_POST;
+        }
+
         $connection = Connection::connect();
         $availableFrom = null;
         if ($_POST['available_from'] == null) {
@@ -214,7 +244,7 @@ class ListingsController
         return new Redirect('/listings');
     }
 
-    public function edit($vars): View
+    public function edit($vars)
     {
         $connection = Connection::connect();
 
@@ -238,10 +268,15 @@ class ListingsController
             $result['img_path'],
             $result['price']);
 
-        return new View("Listings/edit.html", [
-            "listing" => $apartment,
-            'minDate' => Carbon::now()->format('Y-m-d')
-        ]);
+
+        if (($_SESSION['user_id']) == $result['user_id']) {
+            return new View("Listings/edit.html", [
+                "listing" => $apartment,
+                'minDate' => Carbon::now()->format('Y-m-d')
+            ]);
+    }
+        else return new Redirect('/listings');
+
     }
 
     public function update(array $vars)

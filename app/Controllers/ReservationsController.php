@@ -10,6 +10,13 @@ use Carbon\CarbonPeriod;
 
 class ReservationsController
 {
+    public function __construct()
+    {
+        if (!isset($_SESSION['user_id'])) {
+            header("location: /login", true);
+        }
+    }
+
     public function create($vars)
     {
         return new View("Reservations/create.html", [

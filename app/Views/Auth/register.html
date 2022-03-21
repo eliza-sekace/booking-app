@@ -89,15 +89,18 @@
         <p> Don't have account yet? Sign up here!</p>
     </div>
     <form action="/register" method="post">
-        <input type="text" name="name" placeholder="Name">
-        <input type="text" name="surname" placeholder="Surname">
-        <input type="text" name="email" placeholder="E-mail">
-        <input type="password" name="password" placeholder="Password">
-        <input type="password" name="password_confirmation" placeholder="Confirm password">
+        <input type="text" name="name" placeholder="Name" required>
+        <input type="text" name="surname" placeholder="Surname" required>
+        <input type="text" name="email" placeholder="E-mail" required>
+        <input type="password" name="password" placeholder="Password" required minlength="6">
+        <input type="password" name="password_confirmation" placeholder="Confirm password" required minlength="6">
 
         <br>
         <button type="submit" name="submit">SIGN UP</button>
         <br>
+<!--        <p> {% for error in errors %}-->
+<!--            {{ error }}-->
+<!--        {% endfor %}</p>-->
 <div class="form-header">
     Already a member?
     <a href="/login">Login here!</a>
