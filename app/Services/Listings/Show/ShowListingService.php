@@ -3,6 +3,7 @@ namespace App\Services\Listings\Show;
 
 use App\Database\Connection;
 use App\Models\Listing;
+use App\Repositories\Listing\ListingRepository;
 use App\Repositories\Listing\PDOListingsRepository;
 use App\Repositories\ProfilesRepository;
 use App\Services\Ratings\Show\ArticleRatingService;
@@ -11,6 +12,12 @@ use Carbon\CarbonPeriod;
 
 class ShowListingService
 {
+    private ListingRepository $listingRepository;
+
+    public function __construct()
+    {
+    }
+
     public function execute(ShowListingRequest $request): ShowListingResponse
     {
         $result=new PDOListingsRepository;
@@ -27,8 +34,8 @@ class ShowListingService
             $listing->getPrice());
 
         $profileRepository = new ProfilesRepository();
-        $profile = $profileRepository->getByUserId($listing->getUserId());
-//        $currentUser = $_SESSION['user_id'];
+//        $profile = $profileRepository->getByUserId($listing->getUserId());
+////        $currentUser = $_SESSION['user_id'];
 
 $connection=Connection::connect();
         $reviews = $connection

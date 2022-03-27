@@ -4,7 +4,7 @@ namespace App\Models;
 
 class Listing
 {
-    private int $id;
+    private ?int $id;
     private int $user_id;
     private string $name;
     private string $address;
@@ -15,7 +15,7 @@ class Listing
     private int $price;
 
 
-    public function __construct($id, $user_id, $name, $address, $description, $available_from, $available_till = null, $imgPath = null, $price)
+    public function __construct(?int $id, $user_id, $name, $address, $description, $available_from, $available_till = null, $imgPath = null, $price)
     {
         $this->id = $id;
         $this->name = $name;
@@ -28,7 +28,7 @@ class Listing
         $this->price = $price;
     }
 
-    public function getId(): int
+    public function getId(): ?int
     {
         return $this->id;
     }
@@ -83,9 +83,6 @@ class Listing
             || !isset($attributes['name'])
             || !isset($attributes['address'])
             || !isset($attributes['description'])
-            || !isset($attributes['available_from'])
-            || !isset($attributes['available_till'])
-            || !isset($attributes['img_path'])
             || !isset($attributes['price'])
         ) {
             return null;

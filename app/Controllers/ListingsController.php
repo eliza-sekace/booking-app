@@ -5,10 +5,12 @@ namespace App\Controllers;
 use App\Database\Connection;
 use App\Exceptions\FormValidationException;
 use App\Exceptions\ResourceNotFoundException;
-use App\Models\Listing;
 use App\Redirect;
+use App\Repositories\Listing\PdoListingRepository;
 use App\Repositories\Listing\PDOListingsRepository;
 use App\Repositories\ProfilesRepository;
+use App\Services\Listings\Edit\EditListingRequest;
+use App\Services\Listings\Edit\EditListingService;
 use App\Services\Listings\Show\ShowListingRequest;
 use App\Services\Listings\Show\ShowListingService;
 use App\Services\Listings\Store\StoreListingRequest;
@@ -18,8 +20,6 @@ use App\Validation\Errors;
 use App\Validation\FormValidator;
 use App\Views\View;
 use Carbon\Carbon;
-use Carbon\CarbonPeriod;
-
 
 class ListingsController
 {
@@ -32,30 +32,9 @@ class ListingsController
 
     public function index()
     {
-        $connection = Connection::connect();
-        $apartments = $connection
-            ->createQueryBuilder()
-            ->select('id', 'user_id', 'name', 'address', 'description', 'available_from', 'available_till',
-                'img_path', 'price')
-            ->from('apartments')
-            ->executeQuery()
-            ->fetchAllAssociative();
-
-        $listings = [];
-        foreach ($apartments as $apartment) {
-            $listings[] = new Listing(
-                $apartment['id'],
-                $apartment['user_id'],
-                $apartment['name'],
-                $apartment['address'],
-                $apartment['description'],
-                $apartment['available_from'],
-                $apartment['available_till'],
-                $apartment['img_path'],
-                $apartment['price']);
-        }
+        $listings = new PdoListingRepository();
         return new View("Listings/index.html", [
-            'listings' => $apartments
+            'listings' => $listings->index()
         ]);
     }
 
@@ -73,7 +52,6 @@ class ListingsController
 
             $profileRepository = new ProfilesRepository();
             $profile = $profileRepository->getByUserId($response->getListing()->getUserId());
-            $currentUser = $_SESSION['user_id'];
 
         } catch (ResourceNotFoundException $e) {
             echo ($e->getMessage()) . "<br>";
@@ -84,7 +62,7 @@ class ListingsController
         return new View("Listings/show.html", [
             'listing' => $response->getListing(),
             'profile' => $profile,
-            'currentUser' => $currentUser,
+            'currentUser' => $_SESSION['user_id'],
             'reviews' => $response->getReviews(),
             'minDate' => $response->getMinDate(),
             'averageRating' => $rating->getStarRating($response->getReviewCount(), $response->getReviewSum())['averageRating'],
@@ -112,7 +90,6 @@ class ListingsController
                 'address' => ['required'],
                 'description' => ['required'],
                 'price' => ['required'],
-
             ]);
             $validator->passes();
         } catch (FormValidationException $exception) {
@@ -120,44 +97,29 @@ class ListingsController
             $_SESSION['errors'] = $validator->getErrors();
             $_SESSION['inputs'] = $_POST;
         }
+        $listings = new PdoListingRepository();
+        $service = new StoreListingService($listings);
 
-        $connection = Connection::connect();
-        $availableFrom = null;
-        if ($_POST['available_from'] == null) {
-            $availableFrom = Carbon::now()->format('Y-m-d');
-        }
-
-        $service = new StoreListingService();
         $service->execute(new StoreListingRequest(
             $_SESSION['user_id'],
             $_POST['name'],
             $_POST['address'],
             $_POST['description'],
-            $availableFrom,
-            $_POST['available_till'],
-            $_POST['img_path'],
-            $_POST['price']
+            $_POST['price'],
+            $_POST['available_from'],
+            $_POST['available_till'] ?? '',
+            $_POST['img_path']
         ));
-
-
         return new Redirect('/listings');
     }
 
     public function delete(array $vars)
     {
-        $connection = Connection::connect();
+        $apartmentId = (int)$vars['id'];
+        $result = new PdoListingRepository();
 
-        $result = $connection
-            ->createQueryBuilder()
-            ->select('user_id')
-            ->from('apartments')
-            ->where('id = ?')
-            ->setParameter(0, $vars["id"])
-            ->executeQuery()
-            ->fetchAssociative();
-
-        if ($_SESSION['user_id'] == $result['user_id']) {
-            $connection
+        if ($_SESSION['user_id'] == $result->getById($apartmentId)->getUserId()) {
+            Connection::connect()
                 ->delete('apartments', ['id' => (int)$vars['id']]);
         }
         return new Redirect('/listings');
@@ -165,59 +127,32 @@ class ListingsController
 
     public function edit($vars)
     {
-        $connection = Connection::connect();
+        $apartmentId = (int)$vars['id'];
+        $service = new EditListingService();
+        $response = $service->execute(new EditListingRequest($apartmentId));
 
-        $result = $connection
-            ->createQueryBuilder()
-            ->select('id', 'user_id', 'name', 'address', 'description', 'available_from', 'available_till', 'img_path', 'price')
-            ->from('apartments')
-            ->where('id = ?')
-            ->setParameter(0, $vars["id"])
-            ->executeQuery()
-            ->fetchAssociative();
-
-        $apartment = new Listing(
-            $result['id'],
-            $result['user_id'],
-            $result['name'],
-            $result['address'],
-            $result['description'],
-            $result['available_from'],
-            $result['available_till'],
-            $result['img_path'],
-            $result['price']);
-
-
-        if (($_SESSION['user_id']) == $result['user_id']) {
+        if (($_SESSION['user_id']) == $response->getUserId()) {
             return new View("Listings/edit.html", [
-                "listing" => $apartment,
+                "listing" => $response,
                 'minDate' => Carbon::now()->format('Y-m-d')
             ]);
         } else return new Redirect('/listings');
-
     }
 
     public function update(array $vars)
     {
-        $connection = Connection::connect();
+        $apartmentId = (int)$vars['id'];
+        $listing = new PdoListingRepository();
 
-        $result = $connection
-            ->createQueryBuilder()
-            ->select('id', 'user_id', 'name', 'address', 'description', 'available_from', 'available_till')
-            ->from('apartments')
-            ->where('id = ?')
-            ->setParameter(0, $vars["id"])
-            ->executeQuery()
-            ->fetchAssociative();
-
-        if ($_SESSION['user_id'] == $result['user_id']) {
-            $connection
+        if ($_SESSION['user_id'] == $listing->getById($apartmentId)->getUserId()) {
+            Connection::connect()
                 ->update('apartments', [
                     'name' => $_POST['name'],
                     'address' => $_POST['address'],
                     'description' => $_POST['description']
-                ], ['id' => (int)$vars['id']]);
+                ],
+                    ['id' => $apartmentId]);
         }
-        header("location: /listings/{$vars['id']}", true);
+        return new Redirect("/listings/{$apartmentId}");
     }
 }
