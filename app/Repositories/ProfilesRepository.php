@@ -4,7 +4,6 @@ namespace App\Repositories;
 
 use App\Database\Connection;
 use App\Models\Profile;
-use App\Models\User;
 
 class ProfilesRepository
 {

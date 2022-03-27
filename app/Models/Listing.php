@@ -11,11 +11,11 @@ class Listing
     private string $description;
     private ?string $available_from;
     private ?string $available_till;
-    private ?string $imgPath ;
+    private ?string $imgPath;
     private int $price;
 
 
-    public function __construct($id, $user_id, $name, $address, $description, $available_from, $available_till=null, $imgPath=null, $price)
+    public function __construct($id, $user_id, $name, $address, $description, $available_from, $available_till = null, $imgPath = null, $price)
     {
         $this->id = $id;
         $this->name = $name;
@@ -74,6 +74,34 @@ class Listing
     public function getPrice(): int
     {
         return $this->price;
+    }
+
+    public static function make($attributes)
+    {
+        if (!isset($attributes['id'])
+            || !isset($attributes['user_id'])
+            || !isset($attributes['name'])
+            || !isset($attributes['address'])
+            || !isset($attributes['description'])
+            || !isset($attributes['available_from'])
+            || !isset($attributes['available_till'])
+            || !isset($attributes['img_path'])
+            || !isset($attributes['price'])
+        ) {
+            return null;
+        }
+
+        return new self(
+            $attributes['id'],
+            $attributes['user_id'],
+            $attributes['name'],
+            $attributes['address'],
+            $attributes['description'],
+            $attributes['available_from'],
+            $attributes['available_till'],
+            $attributes['img_path'],
+            $attributes['price']
+        );
     }
 
 

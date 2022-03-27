@@ -7,7 +7,13 @@ use App\Exceptions\FormValidationException;
 use App\Exceptions\ResourceNotFoundException;
 use App\Models\Listing;
 use App\Redirect;
+use App\Repositories\Listing\PDOListingsRepository;
 use App\Repositories\ProfilesRepository;
+use App\Services\Listings\Show\ShowListingRequest;
+use App\Services\Listings\Show\ShowListingService;
+use App\Services\Listings\Store\StoreListingRequest;
+use App\Services\Listings\Store\StoreListingService;
+use App\Services\Ratings\Show\ArticleRatingService;
 use App\Validation\Errors;
 use App\Validation\FormValidator;
 use App\Views\View;
@@ -23,6 +29,7 @@ class ListingsController
             header("location: /login", true);
         }
     }
+
     public function index()
     {
         $connection = Connection::connect();
@@ -55,126 +62,36 @@ class ListingsController
     public function show($vars)
     {
         try {
-        $connection = Connection::connect();
-        $result = $connection
-            ->createQueryBuilder()
-            ->select('id', 'user_id', 'name', 'address', 'description', 'available_from',
-                'available_till', 'img_path', 'price')
-            ->from('apartments')
-            ->where('id = ?')
-            ->setParameter(0, $vars["id"])
-            ->executeQuery()
-            ->fetchAssociative();
+            $apartmentId = (int)$vars['id'];
+            $service = new ShowListingService();
+            $response = $service->execute(new ShowListingRequest($apartmentId));
 
+            $result = new PDOListingsRepository;
             if (!$result) {
-                throw new ResourceNotFoundException("Article with id {$vars['id']} not found");
+                throw new ResourceNotFoundException("Article with id {$apartmentId} not found");
             }
 
-        $apartment = new Listing(
-            $result['id'],
-            $result['user_id'],
-            $result['name'],
-            $result['address'],
-            $result['description'],
-            $result['available_from'],
-            $result['available_till'],
-            $result['img_path'],
-            $result['price']);
-
-        $profileRepository = new ProfilesRepository();
-        $profile = $profileRepository->getByUserId($result['user_id']);
-        $currentUser = $_SESSION['user_id'];
-
-
-        $reviews = $connection
-            ->createQueryBuilder()
-            ->select('r.id', 'r.user_id', 'r.apartment_id', 'r.review', 'r.rating', 'r.created_at',
-                'p.name', 'p.surname')
-            ->from('reviews', 'r')
-            ->leftJoin('r', 'user_profiles', 'p', 'r.user_id=p.user_id')
-            ->where('r.apartment_id = ?')
-            ->setParameter(0, $vars["id"])
-            ->orderBy('r.id', 'desc')
-            ->executeQuery()
-            ->fetchAllAssociative();
-
-        $reviewCount = $connection
-            ->createQueryBuilder()
-            ->select('COUNT("rating")')
-            ->from("reviews")
-            ->where('apartment_id =?')
-            ->setParameter(0, $vars['id'])
-            ->executeQuery()
-            ->fetchAssociative();
-
-        $reviewSum = $connection
-            ->createQueryBuilder()
-            ->select('rating')
-            ->from("reviews")
-            ->where('apartment_id =?')
-            ->setParameter(0, $vars['id'])
-            ->executeQuery()
-            ->fetchAllAssociative();
-
-        if ($reviewCount['COUNT("rating")'] == false) {
-            $averageRating = "No reviews yet!";
-            $averageRatingStars = '';
-        } else {
-            $reviewRatings = 0;
-            foreach ($reviewSum as $review) {
-                $reviewRatings += $review['rating'];
-            }
-            $averageRating = round($reviewRatings / (int)$reviewCount['COUNT("rating")'], 1);
-            $averageRatingStars = str_repeat("★", round($averageRating, 0));
-        }
-
-            //get start available dates
-        $availableDates = $connection
-            ->createQueryBuilder()
-            ->select('id', 'available_from', 'available_till')
-            ->from('apartments')
-            ->where('id=?')
-            ->setParameter(0, $vars['id'])
-            ->executeQuery()
-            ->fetchAssociative();
-
-        //get all booked dates
-        $allReservations = $connection
-            ->createQueryBuilder()
-            ->select('reserve_from', 'reserve_till')
-            ->from('reservations')
-            ->where('apartment_id=?')
-            ->setParameter(0, $vars['id'])
-            ->executeQuery()
-            ->fetchAllAssociative();
-
-        $reservedDates = [];
-        foreach ($allReservations as $reservation) {
-            $period = CarbonPeriod::create($reservation['reserve_from'], $reservation['reserve_till']);
-            foreach ($period as $date) {
-                $reservedDates[] = $date->format('Y-m-d');
-            }
-        }
-        if (Carbon::now()->lte($availableDates['available_from'])){
-            $minDate=$availableDates['available_from'];
-        } else $minDate=Carbon::now()->format('Y-m-d');
+            $profileRepository = new ProfilesRepository();
+            $profile = $profileRepository->getByUserId($response->getListing()->getUserId());
+            $currentUser = $_SESSION['user_id'];
 
         } catch (ResourceNotFoundException $e) {
-           echo ($e->getMessage()). "<br>";
+            echo ($e->getMessage()) . "<br>";
             return new View('404.html');
         }
+        $rating = new ArticleRatingService();
 
         return new View("Listings/show.html", [
-            'listing' => $apartment,
+            'listing' => $response->getListing(),
             'profile' => $profile,
             'currentUser' => $currentUser,
-            'reviews' => $reviews,
-            'minDate' => $minDate,
-            'averageRating' => $averageRating,
-            'averageRatingStars' => $averageRatingStars,
-            'available_from' => $availableDates['available_from'],
-            'available_till' => $availableDates['available_till'],
-            'reserved_dates'=>$reservedDates
+            'reviews' => $response->getReviews(),
+            'minDate' => $response->getMinDate(),
+            'averageRating' => $rating->getStarRating($response->getReviewCount(), $response->getReviewSum())['averageRating'],
+            'averageRatingStars' => $rating->getStarRating($response->getReviewCount(), $response->getReviewSum())['averageRatingStars'],
+            'available_from' => $response->getAvailableDates()['available_from'],
+            'available_till' => $response->getAvailableDates()['available_till'],
+            'reserved_dates' => $response->getReservedDates()
         ]);
     }
 
@@ -183,7 +100,7 @@ class ListingsController
         return new View("Listings/create.html", [
             'inputs' => $_SESSION['inputs'] ?? [],
             'minDate' => Carbon::now()->format('Y-m-d'),
-            'errors'=>Errors::getAll()
+            'errors' => Errors::getAll()
         ]);
     }
 
@@ -209,17 +126,19 @@ class ListingsController
         if ($_POST['available_from'] == null) {
             $availableFrom = Carbon::now()->format('Y-m-d');
         }
-        $result = $connection
-            ->insert('apartments', [
-                'user_id' => $_SESSION['user_id'],
-                'name' => $_POST['name'],
-                'address' => $_POST['address'],
-                'description' => $_POST['description'],
-                'available_from' => $availableFrom,
-                'available_till' => $_POST['available_till'],
-                'img_path' => $_POST['img_path'],
-                'price' => $_POST['price']
-            ]);
+
+        $service = new StoreListingService();
+        $service->execute(new StoreListingRequest(
+            $_SESSION['user_id'],
+            $_POST['name'],
+            $_POST['address'],
+            $_POST['description'],
+            $availableFrom,
+            $_POST['available_till'],
+            $_POST['img_path'],
+            $_POST['price']
+        ));
+
 
         return new Redirect('/listings');
     }
@@ -274,8 +193,7 @@ class ListingsController
                 "listing" => $apartment,
                 'minDate' => Carbon::now()->format('Y-m-d')
             ]);
-    }
-        else return new Redirect('/listings');
+        } else return new Redirect('/listings');
 
     }
 
