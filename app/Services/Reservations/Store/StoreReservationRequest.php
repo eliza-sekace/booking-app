@@ -1,19 +1,18 @@
 <?php
+namespace App\Services\Reservations\Store;
 
-namespace App\Services\Listings\Show;
-
-class ShowListingRequest
+class StoreReservationRequest
 {
     private int $apartmentId;
-
-
     public function __construct(int $apartmentId)
     {
         $this->apartmentId = $apartmentId;
+
     }
 
     public function getApartmentId(): int
     {
         return $this->apartmentId;
     }
+
 }

@@ -4,7 +4,6 @@ namespace App\Services\Listings\Show;
 
 use App\Repositories\Listing\ListingRepository;
 use App\Repositories\Listing\PdoListingRepository;
-use App\Repositories\ProfilesRepository;
 use App\Repositories\Reservations\ReservationRepository;
 use App\Repositories\Reservations\PdoReservationRepository;
 use App\Repositories\Reviews\PdoReviewRepository;
@@ -30,7 +29,6 @@ class ShowListingService
     {
         $result = $this->listingRepository;
         $apartmentId = $result->getById($request->getApartmentId());
-        $profileRepository = new ProfilesRepository();
 
         $reviews = $this->reviewRepository->getReviews($apartmentId->getId());
         $reviewCount = $this->reviewRepository->getReviewCount($apartmentId->getId());

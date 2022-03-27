@@ -2,17 +2,15 @@
 
 namespace App\Controllers;
 
-use App\Models\Article;
-use App\Models\Comment;
 use App\Database\Connection;
-
 use App\Redirect;
+use App\Repositories\Listing\PdoListingRepository;
+use App\Repositories\Reviews\PdoReviewRepository;
 
 class ReviewsController
 {
     public function __construct()
     {
-        //session_start();
         if (!isset($_SESSION['user_id'])) {
             header("location: /login", true);
         }
@@ -20,41 +18,22 @@ class ReviewsController
 
     public function create($vars)
     {
-        $connection = Connection::connect();
+        $result = new PdoListingRepository();
+        $apartmentId = $vars['id'];
+        $userId = $_SESSION['user_id'];
 
-        $result = $connection
-            ->createQueryBuilder()
-            ->select('id', 'user_id', 'name', 'address', 'description', 'available_from', 'available_till')
-            ->from('apartments')
-            ->where('id = ?')
-            ->setParameter(0, $vars["id"])
-            ->executeQuery()
-            ->fetchAssociative();
+        $review = new PdoReviewRepository();
+        $review = $review->checkIfLeftReview($apartmentId, $userId);
 
-        $reviews = [];
-        $reviews[] = $_POST['review'];
-
-        $review = $connection
-            ->createQueryBuilder()
-            ->select('user_id','apartment_id')
-            ->from('reviews')
-            ->where('apartment_id=?')
-            ->andWhere('user_id=?')
-            ->setParameter(0, $vars["id"])
-            ->setParameter(1, $_SESSION['user_id'])
-            ->executeQuery()
-            ->fetchAssociative();
-
-        if ($review == false) {
-            $connection
+        if (!$review) {
+            Connection::connect()
                 ->insert('reviews', [
                     'user_id' => $_SESSION['user_id'],
-                    'apartment_id' => $result['id'],
+                    'apartment_id' => $result->getById($apartmentId)->getId(),
                     'review' => $_POST['review'],
                     'rating' => $_POST['rating']
                 ]);
         }
-
         return new Redirect("/listings/{$vars["id"]}");
     }
 

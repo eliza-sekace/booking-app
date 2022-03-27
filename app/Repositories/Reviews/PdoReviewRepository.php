@@ -54,4 +54,20 @@ class PdoReviewRepository implements ReviewRepository
 
         return $reviewSum;
     }
+
+    public function checkIfLeftReview(int $apartmentId, int $userId): bool
+    {
+        $review = Connection::connect()
+            ->createQueryBuilder()
+            ->select('user_id', 'apartment_id')
+            ->from('reviews')
+            ->where('apartment_id=?')
+            ->andWhere('user_id=?')
+            ->setParameter(0, $apartmentId)
+            ->setParameter(1, $userId)
+            ->executeQuery()
+            ->fetchAssociative();
+
+        return !empty($review);
+    }
 }
