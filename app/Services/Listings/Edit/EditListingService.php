@@ -1,34 +1,17 @@
 <?php
 namespace App\Services\Listings\Edit;
 
-use App\Database\Connection;
 use App\Models\Listing;
-use App\Repositories\Listing\ListingRepository;
+use App\Repositories\Listing\PdoListingRepository;
 
 class EditListingService
 {
-    private ListingRepository $listingRepository;
-
-    public function __construct()
-    {
-    }
-
     public function execute(EditListingRequest $request): Listing
     {
-        $connection = Connection::connect();
-        $result = $connection
-            ->createQueryBuilder()
-            ->select('id', 'user_id', 'name', 'address', 'description', 'available_from', 'available_till', 'img_path', 'price')
-            ->from('apartments')
-            ->where('id = ?')
-            ->setParameter(0, $request->getApartmentId())
-            ->executeQuery()
-            ->fetchAssociative();
-
-        $apartment = Listing::make($result);
-
+        $listing = new PdoListingRepository();
+        $listing->getById($request->getApartmentId());
+        $apartment = Listing::make($listing->getApartmentData($request->getApartmentId()));
         return $apartment;
-
     }
 
 }

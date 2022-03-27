@@ -67,5 +67,20 @@ class PdoListingRepository implements ListingRepository
         return $listings;
     }
 
+    public function getApartmentData(int $id): array
+    {
+        $connection = Connection::connect();
+        $result = $connection
+            ->createQueryBuilder()
+            ->select('id', 'user_id', 'name', 'address', 'description', 'available_from', 'available_till', 'img_path', 'price')
+            ->from('apartments')
+            ->where('id = ?')
+            ->setParameter(0, $id)
+            ->executeQuery()
+            ->fetchAssociative();
+
+        return $result;
+    }
+
 
 }
