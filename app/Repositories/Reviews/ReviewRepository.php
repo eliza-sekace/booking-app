@@ -1,8 +1,6 @@
 <?php
 namespace App\Repositories\Reviews;
 
-use App\Models\Listing;
-
 interface ReviewRepository
 {
     public function getReviews(int $apartmentId):array;

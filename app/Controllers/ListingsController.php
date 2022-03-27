@@ -7,7 +7,6 @@ use App\Exceptions\FormValidationException;
 use App\Exceptions\ResourceNotFoundException;
 use App\Redirect;
 use App\Repositories\Listing\PdoListingRepository;
-use App\Repositories\Listing\PDOListingsRepository;
 use App\Repositories\ProfilesRepository;
 use App\Services\Listings\Edit\EditListingRequest;
 use App\Services\Listings\Edit\EditListingService;

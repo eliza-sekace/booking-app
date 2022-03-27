@@ -2,10 +2,11 @@
 
 namespace App\Services\Listings\Show;
 
-use App\Database\Connection;
 use App\Repositories\Listing\ListingRepository;
 use App\Repositories\Listing\PdoListingRepository;
 use App\Repositories\ProfilesRepository;
+use App\Repositories\Reservations\ReservationRepository;
+use App\Repositories\Reservations\PdoReservationRepository;
 use App\Repositories\Reviews\PdoReviewRepository;
 use App\Repositories\Reviews\ReviewRepository;
 use App\Services\Ratings\Show\ArticleRatingService;
@@ -16,11 +17,13 @@ class ShowListingService
 {
     private ListingRepository $listingRepository;
     private ReviewRepository $reviewRepository;
+    private ReservationRepository $reservationRepository;
 
     public function __construct()
     {
         $this->listingRepository = new PdoListingRepository();
         $this->reviewRepository = new PdoReviewRepository();
+        $this->reservationRepository = new PdoReservationRepository();
     }
 
     public function execute(ShowListingRequest $request): ShowListingResponse
@@ -28,35 +31,14 @@ class ShowListingService
         $result = $this->listingRepository;
         $apartmentId = $result->getById($request->getApartmentId());
         $profileRepository = new ProfilesRepository();
-//        $profile = $profileRepository->getByUserId($apartmentId->getUserId());
-
-        $connection = Connection::connect();
 
         $reviews = $this->reviewRepository->getReviews($apartmentId->getId());
         $reviewCount = $this->reviewRepository->getReviewCount($apartmentId->getId());
         $reviewSum = $this->reviewRepository->getReviewSum($apartmentId->getId());
 
         $rating = new ArticleRatingService();
-
-        //get start available dates
-        $availableDates = $connection
-            ->createQueryBuilder()
-            ->select('id', 'available_from', 'available_till')
-            ->from('apartments')
-            ->where('id=?')
-            ->setParameter(0, $request->getApartmentId())
-            ->executeQuery()
-            ->fetchAssociative();
-
-        //get all booked dates
-        $allReservations = $connection
-            ->createQueryBuilder()
-            ->select('reserve_from', 'reserve_till')
-            ->from('reservations')
-            ->where('apartment_id=?')
-            ->setParameter(0, $request->getApartmentId())
-            ->executeQuery()
-            ->fetchAllAssociative();
+        $availableDates = $this->reservationRepository->getAvailableDates($apartmentId->getId());
+        $allReservations = $this->reservationRepository->getAllReservations($apartmentId->getId());
 
         $reservedDates = [];
         foreach ($allReservations as $reservation) {
