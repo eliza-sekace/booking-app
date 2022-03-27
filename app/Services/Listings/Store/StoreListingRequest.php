@@ -6,7 +6,6 @@ use Carbon\Carbon;
 
 class StoreListingRequest
 {
-   // private int $id;
     private int $user_id;
     private string $name;
     private string $address;
@@ -29,11 +28,6 @@ class StoreListingRequest
         $this->price = $price;
 
     }
-
-//    public function getId(): mixed
-//    {
-//        return $this->id;
-//    }
 
     public function getUserId():int
     {

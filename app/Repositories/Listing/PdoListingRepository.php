@@ -67,15 +67,5 @@ class PdoListingRepository implements ListingRepository
         return $listings;
     }
 
-//    public function update():void
-//    {
-//       Connection::connect()
-//            ->update('apartments', [
-//                'name' => $_POST['name'],
-//                'address' => $_POST['address'],
-//                'description' => $_POST['description']
-//            ],
-//                ['id' => (int)$request->getApartmentId()]);
-//    }
 
 }

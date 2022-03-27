@@ -1,11 +1,13 @@
 <?php
+
 namespace App\Services\Listings\Show;
 
 use App\Database\Connection;
-use App\Models\Listing;
 use App\Repositories\Listing\ListingRepository;
-use App\Repositories\Listing\PDOListingsRepository;
+use App\Repositories\Listing\PdoListingRepository;
 use App\Repositories\ProfilesRepository;
+use App\Repositories\Reviews\PdoReviewRepository;
+use App\Repositories\Reviews\ReviewRepository;
 use App\Services\Ratings\Show\ArticleRatingService;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
@@ -13,62 +15,28 @@ use Carbon\CarbonPeriod;
 class ShowListingService
 {
     private ListingRepository $listingRepository;
+    private ReviewRepository $reviewRepository;
 
     public function __construct()
     {
+        $this->listingRepository = new PdoListingRepository();
+        $this->reviewRepository = new PdoReviewRepository();
     }
 
     public function execute(ShowListingRequest $request): ShowListingResponse
     {
-        $result=new PDOListingsRepository;
-        $listing=$result->getById($request->getApartmentId());
-        $apartment = new Listing(
-            $listing->getId(),
-            $listing->getUserId(),
-            $listing->getName(),
-            $listing->getAddress(),
-            $listing->getDescription(),
-            $listing->getAvailableFrom(),
-            $listing->getAvailableTill(),
-            $listing->getImgPath(),
-            $listing->getPrice());
-
+        $result = $this->listingRepository;
+        $apartmentId = $result->getById($request->getApartmentId());
         $profileRepository = new ProfilesRepository();
-//        $profile = $profileRepository->getByUserId($listing->getUserId());
-////        $currentUser = $_SESSION['user_id'];
+//        $profile = $profileRepository->getByUserId($apartmentId->getUserId());
 
-$connection=Connection::connect();
-        $reviews = $connection
-            ->createQueryBuilder()
-            ->select('r.id', 'r.user_id', 'r.apartment_id', 'r.review', 'r.rating', 'r.created_at',
-                'p.name', 'p.surname')
-            ->from('reviews', 'r')
-            ->leftJoin('r', 'user_profiles', 'p', 'r.user_id=p.user_id')
-            ->where('r.apartment_id = ?')
-            ->setParameter(0, $request->getApartmentId())
-            ->orderBy('r.id', 'desc')
-            ->executeQuery()
-            ->fetchAllAssociative();
+        $connection = Connection::connect();
 
-        $reviewCount = $connection
-            ->createQueryBuilder()
-            ->select('COUNT("rating")')
-            ->from("reviews")
-            ->where('apartment_id =?')
-            ->setParameter(0, $request->getApartmentId())
-            ->executeQuery()
-            ->fetchAssociative();
+        $reviews = $this->reviewRepository->getReviews($apartmentId->getId());
+        $reviewCount = $this->reviewRepository->getReviewCount($apartmentId->getId());
+        $reviewSum = $this->reviewRepository->getReviewSum($apartmentId->getId());
 
-        $reviewSum = $connection
-            ->createQueryBuilder()
-            ->select('rating')
-            ->from("reviews")
-            ->where('apartment_id =?')
-            ->setParameter(0, $request->getApartmentId())
-            ->executeQuery()
-            ->fetchAllAssociative();
-
-        $rating=new ArticleRatingService();
+        $rating = new ArticleRatingService();
 
         //get start available dates
         $availableDates = $connection
@@ -97,11 +65,13 @@ $connection=Connection::connect();
                 $reservedDates[] = $date->format('Y-m-d');
             }
         }
-        if (Carbon::now()->lte($availableDates['available_from'])){
-            $minDate=$availableDates['available_from'];
-        } else $minDate=Carbon::now()->format('Y-m-d');
+
+        if (Carbon::now()->lte($availableDates['available_from'])) {
+            $minDate = $availableDates['available_from'];
+        } else $minDate = Carbon::now()->format('Y-m-d');
+
         return new ShowListingResponse(
-            $listing,
+            $apartmentId,
             $reviews,
             $minDate,
             $availableDates,

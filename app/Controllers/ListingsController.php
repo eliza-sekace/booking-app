@@ -45,7 +45,7 @@ class ListingsController
             $service = new ShowListingService();
             $response = $service->execute(new ShowListingRequest($apartmentId));
 
-            $result = new PDOListingsRepository;
+            $result = new PdoListingRepository();
             if (!$result) {
                 throw new ResourceNotFoundException("Article with id {$apartmentId} not found");
             }
