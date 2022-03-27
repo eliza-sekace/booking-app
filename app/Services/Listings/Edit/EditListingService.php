@@ -25,16 +25,7 @@ class EditListingService
             ->executeQuery()
             ->fetchAssociative();
 
-        $apartment = new Listing(
-            $result['id'],
-            $result['user_id'],
-            $result['name'],
-            $result['address'],
-            $result['description'],
-            $result['available_from'],
-            $result['available_till'],
-            $result['img_path'],
-            $result['price']);
+        $apartment = Listing::make($result);
 
         return $apartment;
 
