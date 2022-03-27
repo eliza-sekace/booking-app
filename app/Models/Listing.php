@@ -63,9 +63,6 @@ class Listing
         return $this->available_till;
     }
 
-    /**
-     * @return string
-     */
     public function getImgPath(): ?string
     {
         return $this->imgPath;

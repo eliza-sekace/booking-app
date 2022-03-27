@@ -2,7 +2,6 @@
 
 namespace App\Controllers;
 
-use App\Database\Connection;
 use App\Redirect;
 use App\Repositories\Reservations\PdoReservationRepository;
 use App\Services\Reservations\Store\StoreReservationRequest;
@@ -32,15 +31,10 @@ class ReservationsController
         $apartmentId = $vars['id'];
         $reserveFrom = $_POST['reserve_from'];
         $reserveTill = $_POST['reserve_till'];
+        $userId = $_SESSION['user_id'];
 
         if ($service->execute(new StoreReservationRequest($apartmentId), $reserveFrom, $reserveTill)){
-            Connection::connect()
-                ->insert('reservations', [
-                    'user_id' => $_SESSION['user_id'],
-                    'apartment_id' => $apartmentId,
-                    'reserve_from' => $_POST['reserve_from'],
-                    'reserve_till' => $_POST['reserve_till'],
-                ]);
+            $repository->store($userId, $apartmentId, $reserveFrom, $reserveTill);
         }
         return new Redirect("/listings/{$apartmentId}");
     }

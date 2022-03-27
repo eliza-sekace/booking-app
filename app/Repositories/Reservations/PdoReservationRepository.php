@@ -34,6 +34,16 @@ class PdoReservationRepository implements ReservationRepository
             ->fetchAllAssociative();
 
         return $allReservations;
+    }
 
+    public function store(int $userId, int $apartmentId, string $reserveFrom, string $reserveTill): void
+    {
+        Connection::connect()
+            ->insert('reservations', [
+                'user_id' => $userId,
+                'apartment_id' => $apartmentId,
+                'reserve_from' => $reserveFrom,
+                'reserve_till' => $reserveTill,
+            ]);
     }
 }

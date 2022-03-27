@@ -4,7 +4,7 @@ namespace App\Controllers;
 
 use App\Exceptions\FormValidationException;
 use App\Redirect;
-use App\Repositories\UsersRepository;
+use App\Repositories\Users\UsersRepository;
 use App\Validation\FormValidator;
 use App\Views\View;
 

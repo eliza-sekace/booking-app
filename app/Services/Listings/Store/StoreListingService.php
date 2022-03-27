@@ -16,11 +16,11 @@ class StoreListingService
         $this->listingRepository = new PdoListingRepository();
     }
 
-    public function execute(StoreListingRequest $request):Listing
+    public function execute(StoreListingRequest $request): Listing
     {
-        $id=null;
+        $id = null;
         $listing = new Listing(
-           $id,
+            $id,
             $request->getUserId(),
             $request->getName(),
             $request->getAddress(),

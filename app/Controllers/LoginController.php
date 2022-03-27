@@ -3,7 +3,7 @@
 namespace App\Controllers;
 
 use App\Redirect;
-use App\Repositories\UsersRepository;
+use App\Repositories\Users\UsersRepository;
 use App\Views\View;
 
 class LoginController

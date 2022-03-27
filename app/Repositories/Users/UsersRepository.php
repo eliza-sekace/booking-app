@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Repositories;
+namespace App\Repositories\Users;
 
 use App\Database\Connection;
 use App\Models\User;
