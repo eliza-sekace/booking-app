@@ -8,8 +8,6 @@ use App\Repositories\Reservations\PdoReservationRepository;
 use App\Services\Reservations\Store\StoreReservationRequest;
 use App\Services\Reservations\Store\StoreReservationService;
 use App\Views\View;
-use Carbon\Carbon;
-use Carbon\CarbonPeriod;
 
 class ReservationsController
 {

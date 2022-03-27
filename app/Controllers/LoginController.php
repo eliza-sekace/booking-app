@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Redirect;
 use App\Repositories\UsersRepository;
 use App\Views\View;
 
@@ -25,25 +26,16 @@ class LoginController
 
     public function login()
     {
-        // Find user with email
         $user = $this->repository->getByEmail($_POST['email']);
-
-        // If no user redirect to login
         if (is_null($user)) {
             header("location: /login", true);
         }
-
-        // Check password
         if (!$user->checkPassword($_POST['password'])) {
             header("location: /login", true);
-            return;
         }
-
-        // If ok, start session, add user id to session, redirect to articles
         session_start();
         $_SESSION['user_id'] = $user->getId();
-
-        header("location: /listings", true);
+        return new Redirect('/listings');
     }
 
     public function logout()
