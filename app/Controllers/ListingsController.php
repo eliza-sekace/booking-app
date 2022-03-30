@@ -58,6 +58,7 @@ class ListingsController
             echo ($e->getMessage()) . "<br>";
             return new View('404.html');
         }
+
         $rating = $this->container->get(ListingRatingService::class);
         return new View("Listings/show.html", [
             'listing' => $response->getListing(),

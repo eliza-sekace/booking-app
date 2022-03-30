@@ -94,7 +94,6 @@
                        data-date-end-date="{{ available_till }}" name="reserve_till" autocomplete="off">
             </div>
         </div>
-
         <br>
         <button class="button-17">Make reservation</button>
         <!--        <input class="form-control" type="text" name="days" id="days">-->
@@ -150,11 +149,7 @@
 {% endblock %}
 {% block scripts %}
 <script type="text/javascript">
-    reservedDates = {
-    {
-        reserved_dates | json_encode() | raw
-    }
-    }
+    reservedDates = {{reserved_dates | json_encode() | raw}}
     $('.datepicker').datepicker({
         minDate: "{{ minDate }}",
         maxDate: "{{ available_till }}",

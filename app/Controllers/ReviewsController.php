@@ -40,8 +40,5 @@ class ReviewsController
         }
         return new Redirect("/listings/{$vars["id"]}");
     }
-
-
-
 }
 
