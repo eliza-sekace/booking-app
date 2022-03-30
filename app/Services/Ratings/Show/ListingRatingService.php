@@ -1,18 +1,28 @@
 <?php
+
 namespace App\Services\Ratings\Show;
 
-class ArticleRatingService
+use App\Repositories\Reviews\ReviewRepository;
+
+class ListingRatingService
 {
-    private string $averageRating ="No reviews yet";
+    private ReviewRepository $reviewRepository;
+
+    public function __construct(ReviewRepository $reviewRepository)
+    {
+        $this->reviewRepository = $reviewRepository;
+    }
+
+    private string $averageRating = "No reviews yet";
     private string $averageRatingStars = '';
 
     public function getStarRating($reviewCount, $reviewSum)
     {
-        $rating=[];
+        $rating = [];
         if ($reviewCount['COUNT("rating")'] == false) {
-            $rating=[
+            $rating = [
                 'averageRating' => $this->averageRating,
-                'averageRatingStars'=>$this->averageRatingStars
+                'averageRatingStars' => $this->averageRatingStars
             ];
             $this->averageRating = "No reviews yet!";
             $this->averageRatingStars = '';
@@ -23,11 +33,17 @@ class ArticleRatingService
             }
             $this->averageRating = round($reviewRatings / (int)$reviewCount['COUNT("rating")'], 1);
             $this->averageRatingStars = str_repeat("★", round($this->averageRating, 0));
-            $rating=[
+            $rating = [
                 'averageRating' => $this->averageRating,
-                'averageRatingStars'=>$this->averageRatingStars
+                'averageRatingStars' => $this->averageRatingStars
             ];
-        } return $rating;
+        }
+        return $rating;
+    }
+
+    public function checkIfLeftReview($apartmentId, $userId)
+    {
+        return $this->reviewRepository->checkIfLeftReview($apartmentId, $userId);
     }
 
 

@@ -2,8 +2,6 @@
 namespace App\Repositories\Reviews;
 
 use App\Database\Connection;
-use App\Models\Listing;
-use App\Repositories\Listing\ListingRepository;
 
 class PdoReviewRepository implements ReviewRepository
 {

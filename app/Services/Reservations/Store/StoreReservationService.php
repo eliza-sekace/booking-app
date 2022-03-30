@@ -12,7 +12,7 @@ class StoreReservationService
 
     public function __construct(ReservationRepository $reservationRepository)
     {
-        $this->reservationRepository = new PdoReservationRepository();
+        $this->reservationRepository = $reservationRepository;
     }
 
     public function execute(StoreReservationRequest $request, $reserveFrom, $reserveTill):bool
@@ -45,5 +45,10 @@ class StoreReservationService
             return true;
         }
         else return false;
+    }
+
+    public function store($userId,$apartmentId, $reserveFrom, $reserveTill)
+    {
+     $this->reservationRepository->store($userId, $apartmentId, $reserveFrom, $reserveTill);
     }
 }

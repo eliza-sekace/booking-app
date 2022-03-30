@@ -3,12 +3,8 @@
 namespace App\Services\Listings\Show;
 
 use App\Repositories\Listing\ListingRepository;
-use App\Repositories\Listing\PdoListingRepository;
 use App\Repositories\Reservations\ReservationRepository;
-use App\Repositories\Reservations\PdoReservationRepository;
-use App\Repositories\Reviews\PdoReviewRepository;
 use App\Repositories\Reviews\ReviewRepository;
-use App\Services\Ratings\Show\ArticleRatingService;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 
@@ -18,11 +14,11 @@ class ShowListingService
     private ReviewRepository $reviewRepository;
     private ReservationRepository $reservationRepository;
 
-    public function __construct()
+    public function __construct(ListingRepository $listingRepository, ReviewRepository $reviewRepository, ReservationRepository $reservationRepository)
     {
-        $this->listingRepository = new PdoListingRepository();
-        $this->reviewRepository = new PdoReviewRepository();
-        $this->reservationRepository = new PdoReservationRepository();
+        $this->listingRepository = $listingRepository;
+        $this->reviewRepository = $reviewRepository;
+        $this->reservationRepository = $reservationRepository;
     }
 
     public function execute(ShowListingRequest $request): ShowListingResponse
@@ -34,7 +30,6 @@ class ShowListingService
         $reviewCount = $this->reviewRepository->getReviewCount($apartmentId->getId());
         $reviewSum = $this->reviewRepository->getReviewSum($apartmentId->getId());
 
-        $rating = new ArticleRatingService();
         $availableDates = $this->reservationRepository->getAvailableDates($apartmentId->getId());
         $allReservations = $this->reservationRepository->getAllReservations($apartmentId->getId());
 
@@ -60,6 +55,14 @@ class ShowListingService
             $reviewSum
         );
     }
+    public function index()
+    {
+        return $this->listingRepository->index();
+    }
 
+    public function getById($id)
+    {
+        return $this->listingRepository->getById($id);
+    }
 
 }

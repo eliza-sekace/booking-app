@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Repositories\Listing;
 
 use App\Database\Connection;
@@ -26,7 +27,7 @@ class PdoListingRepository implements ListingRepository
         return Listing::make($result);
     }
 
-    public function save(Listing $listing):void
+    public function save(Listing $listing): void
     {
         Connection::connect()
             ->insert('apartments', [
@@ -37,7 +38,7 @@ class PdoListingRepository implements ListingRepository
                 'available_from' => $listing->getAvailableFrom(),
                 'available_till' => $listing->getAvailableTill(),
                 'img_path' => $listing->getImgPath(),
-                'price' =>$listing->getPrice()
+                'price' => $listing->getPrice()
             ]);
     }
 
@@ -82,5 +83,9 @@ class PdoListingRepository implements ListingRepository
         return $result;
     }
 
-
+    public function remove(int $id): void
+    {
+        Connection::connect()
+            ->delete('apartments', ['id' => ($id)]);
+    }
 }

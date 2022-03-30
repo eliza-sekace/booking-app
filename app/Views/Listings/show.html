@@ -81,20 +81,23 @@
         <div class="col-lg-4">
             <h3>From:</h3>
             <div class="input-group date date">
-                <input type="text" id="reserve_from" class="datepickerFrom datepicker form-control" data-date-start-date="{{ minDate }}"
-                data-date-end-date= "{{ available_till }}" name="reserve_from" autocomplete="off">
+                <input type="text" id="reserve_from" class="datepickerFrom datepicker form-control"
+                       data-date-start-date="{{ minDate }}"
+                       data-date-end-date="{{ available_till }}" name="reserve_from" autocomplete="off">
             </div>
         </div>
         <div class="col-lg-4">
             <h3>Until:</h3>
             <div class="input-group date">
-                <input type="text" id="reserve_till" class="datepickerTill datepicker form-control" data-date-start-date="{{ minDate }}"
+                <input type="text" id="reserve_till" class="datepickerTill datepicker form-control"
+                       data-date-start-date="{{ minDate }}"
                        data-date-end-date="{{ available_till }}" name="reserve_till" autocomplete="off">
             </div>
         </div>
+
         <br>
         <button class="button-17">Make reservation</button>
-<!--        <input class="form-control" type="text" name="days" id="days">-->
+        <!--        <input class="form-control" type="text" name="days" id="days">-->
     </form>
     <div id="reservation-info" class=""></div>
 
@@ -144,35 +147,39 @@
     </div>
     {% endfor %}
 </div>
-    {% endblock %}
-    {% block scripts %}
-    <script type="text/javascript">
-        reservedDates = {{reserved_dates | json_encode() | raw}}
-        $('.datepicker').datepicker({
-            minDate: "{{ minDate }}",
-            maxDate: "{{ available_till }}",
-            format: 'yyyy-mm-dd',
-            datesDisabled: reservedDates,
-        });
+{% endblock %}
+{% block scripts %}
+<script type="text/javascript">
+    reservedDates = {
+    {
+        reserved_dates | json_encode() | raw
+    }
+    }
+    $('.datepicker').datepicker({
+        minDate: "{{ minDate }}",
+        maxDate: "{{ available_till }}",
+        format: 'yyyy-mm-dd',
+        datesDisabled: reservedDates,
+    });
 
-        $('.datepicker').on('change', (e) => {
-            const startDate = $('#reserve_from').val();
-            const endDate = $('#reserve_till').val();
+    $('.datepicker').on('change', (e) => {
+        const startDate = $('#reserve_from').val();
+        const endDate = $('#reserve_till').val();
 
-            let reservationInfo = $('#reservation-info');
-            if (startDate && endDate) {
-                const pricePerDay = '{{ listing.price }}'
-                let days = (new Date(endDate)).getDate() - (new Date(startDate)).getDate()
-                const total = pricePerDay * days
-                let info = days > 0 ? `Reservation for ${days} days. Total price: $${total}` : 'Select valid period'
-                reservationInfo.html(info);
-            } else {
-                reservationInfo.empty()
-            }
-        })
-    </script>
+        let reservationInfo = $('#reservation-info');
+        if (startDate && endDate) {
+            const pricePerDay = '{{ listing.price }}'
+            let days = (new Date(endDate)).getDate() - (new Date(startDate)).getDate()
+            const total = pricePerDay * days
+            let info = days > 0 ? `Reservation for ${days} days. Total price: $${total}` : 'Select valid period'
+            reservationInfo.html(info);
+        } else {
+            reservationInfo.empty()
+        }
+    })
+</script>
 
-    {% endblock %}
+{% endblock %}
 
 
 

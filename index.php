@@ -1,10 +1,25 @@
 <?php
-
 use App\Redirect;
+use App\Repositories\Listing\ListingRepository;
+use App\Repositories\Listing\PdoListingRepository;
+use App\Repositories\Reservations\PdoReservationRepository;
+use App\Repositories\Reservations\ReservationRepository;
+use App\Repositories\Reviews\PdoReviewRepository;
+use App\Repositories\Reviews\ReviewRepository;
 use App\Views\View;
+use Twig\Environment;
+use Twig\Loader\FilesystemLoader;
 
 require_once 'vendor/autoload.php';
 session_start();
+
+$builder = new DI\ContainerBuilder();
+$builder->addDefinitions([
+    ListingRepository::class => DI\create(PdoListingRepository::class),
+    ReservationRepository::class => DI\create(PdoReservationRepository::class),
+    ReviewRepository::class => DI\create(PdoReviewRepository::class),
+]);
+$container = $builder->build();
 
 $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) {
     //auth
@@ -60,10 +75,10 @@ switch ($routeInfo[0]) {
         $method = $routeInfo[1][1];
         $vars = $routeInfo[2] ?? [];
 
-        $view = (new $handler)->$method($vars);
+        $view = (new $handler($container))->$method($vars);
 
-        $loader = new \Twig\Loader\FilesystemLoader('app/views');
-        $twig = new \Twig\Environment($loader);
+        $loader = new FilesystemLoader('app/views');
+        $twig = new Environment($loader);
 
         if ($view instanceof View) {
             echo $twig->render($view->getPath(), $view->getVariables());
@@ -76,11 +91,9 @@ switch ($routeInfo[0]) {
 
         break;
 }
-
 if (isset($_SESSION['errors'])) {
     unset($_SESSION['errors']);
 }
-
 if (isset($_SESSION['inputs'])) {
     unset($_SESSION['inputs']);
 }

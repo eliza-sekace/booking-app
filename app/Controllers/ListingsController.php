@@ -6,7 +6,6 @@ use App\Database\Connection;
 use App\Exceptions\FormValidationException;
 use App\Exceptions\ResourceNotFoundException;
 use App\Redirect;
-use App\Repositories\Listing\PdoListingRepository;
 use App\Repositories\Users\ProfilesRepository;
 use App\Services\Listings\Edit\EditListingRequest;
 use App\Services\Listings\Edit\EditListingService;
@@ -14,26 +13,30 @@ use App\Services\Listings\Show\ShowListingRequest;
 use App\Services\Listings\Show\ShowListingService;
 use App\Services\Listings\Store\StoreListingRequest;
 use App\Services\Listings\Store\StoreListingService;
-use App\Services\Ratings\Show\ArticleRatingService;
+use App\Services\Ratings\Show\ListingRatingService;
 use App\Validation\Errors;
 use App\Validation\FormValidator;
 use App\Views\View;
 use Carbon\Carbon;
+use Psr\Container\ContainerInterface;
 
 class ListingsController
 {
-    public function __construct()
+    private ContainerInterface $container;
+
+    public function __construct(ContainerInterface $container)
     {
         if (!isset($_SESSION['user_id'])) {
             header("location: /login", true);
         }
+        $this->container = $container;
     }
 
     public function index()
     {
-        $listings = new PdoListingRepository();
+        $service = $this->container->get(ShowListingService::class);
         return new View("Listings/index.html", [
-            'listings' => $listings->index()
+            'listings' => $service->index()
         ]);
     }
 
@@ -41,11 +44,10 @@ class ListingsController
     {
         try {
             $apartmentId = (int)$vars['id'];
-            $service = new ShowListingService();
+            $service =  $this->container->get(ShowListingService::class);
             $response = $service->execute(new ShowListingRequest($apartmentId));
-
-            $result = new PdoListingRepository();
-            if (!$result) {
+//            $result = new PdoListingRepository();
+            if (!$service) {
                 throw new ResourceNotFoundException("Article with id {$apartmentId} not found");
             }
 
@@ -56,8 +58,7 @@ class ListingsController
             echo ($e->getMessage()) . "<br>";
             return new View('404.html');
         }
-        $rating = new ArticleRatingService();
-
+        $rating = $this->container->get(ListingRatingService::class);
         return new View("Listings/show.html", [
             'listing' => $response->getListing(),
             'profile' => $profile,
@@ -96,8 +97,7 @@ class ListingsController
             $_SESSION['errors'] = $validator->getErrors();
             $_SESSION['inputs'] = $_POST;
         }
-        $listings = new PdoListingRepository();
-        $service = new StoreListingService($listings);
+        $service =  $this->container->get(StoreListingService::class);
 
         $service->execute(new StoreListingRequest(
             $_SESSION['user_id'],
@@ -115,11 +115,10 @@ class ListingsController
     public function delete(array $vars)
     {
         $apartmentId = (int)$vars['id'];
-        $result = new PdoListingRepository();
+        $result =  $this->container->get(ShowListingService::class);
 
         if ($_SESSION['user_id'] == $result->getById($apartmentId)->getUserId()) {
-            Connection::connect()
-                ->delete('apartments', ['id' => (int)$vars['id']]);
+           $result->remove($apartmentId);
         }
         return new Redirect('/listings');
     }
@@ -141,9 +140,9 @@ class ListingsController
     public function update(array $vars)
     {
         $apartmentId = (int)$vars['id'];
-        $listing = new PdoListingRepository();
+        $service =  $this->container->get(ShowListingService::class);
 
-        if ($_SESSION['user_id'] == $listing->getById($apartmentId)->getUserId()) {
+        if ($_SESSION['user_id'] == $service->getById($apartmentId)->getUserId()) {
             Connection::connect()
                 ->update('apartments', [
                     'name' => $_POST['name'],

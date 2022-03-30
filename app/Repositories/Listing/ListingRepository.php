@@ -10,4 +10,5 @@ interface ListingRepository
     public function save(Listing $listing):void;
     public function index():array;
     public function getApartmentData(int $id):array;
+    public function remove(int $id):void;
 }
